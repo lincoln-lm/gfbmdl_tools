@@ -6,7 +6,7 @@ from dataclasses import dataclass
 import json
 import lz4.block
 
-from file_formats import gfbmdl, gfbanm, bntx
+from file_formats import gfbmdl, gfbanm, gfbanmcfg, bntx
 
 
 def fnv1a(s: str):
@@ -19,7 +19,9 @@ def fnv1a(s: str):
     return h
 
 
-with open("hashes.json", "r", encoding="utf-8") as f:
+with open(
+    os.path.join(os.path.dirname(__file__), "hashes.json"), "r", encoding="utf-8"
+) as f:
     HASHES = json.load(f)
 
 
@@ -151,7 +153,10 @@ class GFPak:
                     file_name = file_name.replace(".gfbmdl", "")
                 if file_name.endswith(".gfbanm"):
                     file_type = "animation"
-                    file_name = file_name.replace(".gfbanm", ".json")
+                    file_name = file_name.replace(".gfbanm", ".gfbanm.json")
+                if file_name.endswith(".gfbanmcfg"):
+                    file_type = "animation_config"
+                    file_name = file_name.replace(".gfbanmcfg", ".gfbanmcfg.json")
                 if file_name.endswith(".bntx"):
                     file_type = "texture"
                     file_name = file_name.replace(".bntx", ".png")
@@ -173,6 +178,10 @@ class GFPak:
                     )
                 elif file_type == "animation":
                     gfbanm.convert_gfbanm_raw(
+                        decompressed_data, os.path.join(folder_name, file_name)
+                    )
+                elif file_type == "animation_config":
+                    gfbanmcfg.convert_gfbanmcfg_raw(
                         decompressed_data, os.path.join(folder_name, file_name)
                     )
                 elif file_type == "texture":
@@ -231,6 +240,15 @@ class GFPak:
                     ) as f:
                         self.decompressed_files.append(
                             gfbanm.convert_to_gfbanm_raw(f.read())
+                        )
+                elif file_type == "animation_config":
+                    with open(
+                        os.path.join(folder, folder_name, file_name),
+                        "r",
+                        encoding="utf-8",
+                    ) as f:
+                        self.decompressed_files.append(
+                            gfbanmcfg.convert_to_gfbanmcfg_raw(f.read())
                         )
                 elif file_type == "texture":
                     tex_file_name, _ = os.path.splitext(file_name)
