@@ -26,7 +26,6 @@ def dump_materials(data, materials):
             "parameter3": material["parameter3"],
             "shader": data["shaderNames"][material["shaderIndex"]],
             "parameter4": material["parameter4"],
-            "parameter5": material["parameter5"],
             "textureMaps": [
                 {
                     "sampler": map["sampler"],
@@ -80,7 +79,7 @@ def serialize_materials(data, materials):
             "parameter3": material["parameter3"],
             "shaderIndex": data["shaderNames"].index(material["shader"]),
             "parameter4": material["parameter4"],
-            "parameter5": material["parameter5"],
+            "parameter5": data["shaderNames"].index(material["shader"]),
             "textureMaps": [
                 {
                     "sampler": map["sampler"],
