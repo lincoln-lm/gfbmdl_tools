@@ -1,0 +1,192 @@
+enum BufferFormat : uint {
+  Float = 0,
+  HalfFloat = 1,
+  Byte = 3,
+  Short = 5,
+  BytesAsFloat = 8
+}
+
+enum VertexType : uint {
+  Position = 0,
+  Normal = 1,
+  Binormal = 2,
+  UV1 = 3,
+  UV2 = 4,
+  UV3 = 5,
+  UV4 = 6,
+  Color1 = 7,
+  Color2 = 8,
+  Color3 = 9,
+  Color4 = 10,
+  BoneID = 11,
+  BoneWeight = 12
+}
+
+enum BoneType : uint {
+  NoSkinning = 0,
+  HasSkinning = 1
+}
+
+enum WrapMode : uint {
+  Repeat = 0,
+  Clamp = 1,
+  Mirror = 2
+}
+
+struct Vector3 {
+  x: float;
+  y: float;
+  z: float;
+}
+
+struct BoundingBox {
+  minX: float;
+  minY: float;
+  minZ: float;
+  maxX: float;
+  maxY: float;
+  maxZ: float;
+}
+
+struct ColorRGB32 {
+  r: float;
+  g: float;
+  b: float;
+}
+
+struct BoneRigidData {
+  unknown1: byte;
+}
+
+table UnknownEmpty {
+  unk: uint;
+}
+
+table MatSwitch {
+  name: string;
+  value: bool;
+}
+
+table MatFloat {
+  name: string;
+  value: float;
+}
+
+table MatColor {
+  name: string;
+  color: ColorRGB32;
+}
+
+table MatInt {
+  name: string;
+  value: int;
+}
+
+table MaterialCommon {
+  switches: [MatSwitch];
+  values: [MatInt];
+  colors: [MatColor];
+}
+
+table TextureMapping {
+  unknown1: uint;
+  wrapModeX: WrapMode;
+  wrapModeY: WrapMode;
+  wrapModeZ: WrapMode;
+  unknown5: uint;
+  unknown6: uint;
+  unknown7: uint;
+  unknown8: uint;
+  lodBias: float;
+}
+
+table TextureMap {
+  sampler: string;
+  index: int;
+  params: TextureMapping;
+}
+
+table Material {
+  name: string;
+  shaderGroup: string;
+  renderLayer: int;
+  unknown1: ubyte;
+  unknown2: ubyte;
+  parameter1: int;
+  parameter2: int;
+  parameter3: int;
+  shaderIndex: int;
+  parameter4: int;
+  parameter5: int;
+  textureMaps: [TextureMap];
+  switches: [MatSwitch];
+  values: [MatFloat];
+  colors: [MatColor];
+  unknown3: ubyte;
+  unknown4: ubyte;
+  unknown5: ubyte;
+  unknown6: ubyte;
+  unknown7: ubyte;
+  common: MaterialCommon;
+}
+
+table MeshAttribute {
+  vertexType: VertexType;
+  bufferFormat: BufferFormat;
+  elementCount: uint;
+}
+
+table MeshPolygon {
+  materialIndex: uint;
+  faces: [ushort];
+}
+
+table Mesh {
+  polygons: [MeshPolygon];
+  attributes: [MeshAttribute];
+  data: [ubyte];
+}
+
+table Group {
+  boneIndex: uint;
+  meshIndex: uint;
+  bounding: BoundingBox;
+  layer: uint;
+}
+
+table CollisionGroup {
+  boneIndex: uint;
+  unknown1: uint;
+  boneChildren: [uint];
+  bounding: BoundingBox;
+}
+
+table Bone {
+  name: string;
+  boneType: BoneType;
+  parent: int;
+  zero: uint;
+  visible: bool;
+  scale: Vector3;
+  rotation: Vector3;
+  translation: Vector3;
+  radiusStart: Vector3;
+  radiusEnd: Vector3;
+  rigidCheck: BoneRigidData;
+}
+
+table Model {
+  version: uint;
+  bounding: BoundingBox;
+  textureNames: [string];
+  shaderNames: [string];
+  unknown: [UnknownEmpty];
+  materialNames: [string];
+  materials: [Material];
+  groups: [Group];
+  meshes: [Mesh];
+  bones: [Bone];
+  collisionGroups: [CollisionGroup];
+}
+
+root_type Model;

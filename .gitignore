@@ -1,0 +1,3 @@
+*.gfpak
+hashes.json
+__pycache__/

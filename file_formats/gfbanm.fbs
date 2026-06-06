@@ -1,0 +1,236 @@
+struct sVec2 {
+  u: int16;
+  v: int16;
+}
+
+struct Vec2 {
+  u: float;
+  v: float;
+}
+
+struct Vec3 {
+  x: float;
+  y: float;
+  z: float;
+}
+
+struct sVec3 {
+  x:uint16;
+  y:uint16;
+  z:uint16;
+}
+
+struct Vec4 {
+  x:float;
+  y:float;
+  z:float;
+  w:float;
+}
+
+struct Transform {
+  scale:Vec3;
+  rotate:Vec4;
+  translate:Vec3;
+}
+
+union VectorTrack { FixedVectorTrack, DynamicVectorTrack,  Framed16VectorTrack, Framed8VectorTrack }
+
+table FixedVectorTrack {
+  co: Vec3;
+}
+
+table DynamicVectorTrack {
+  co: [Vec3];
+}
+
+table Framed16VectorTrack {
+  frames:[uint16];
+  co: [Vec3];
+}
+
+table Framed8VectorTrack {
+  frames:[uint8];
+  co:[Vec3];
+}
+
+union RotationTrack { FixedRotationTrack, DynamicRotationTrack, Framed16RotationTrack, Framed8RotationTrack }
+
+table FixedRotationTrack {
+  co:sVec3;
+}
+
+table DynamicRotationTrack {
+  co:[sVec3];
+}
+
+table Framed16RotationTrack {
+  frames:[uint16];
+  co:[sVec3];
+}
+
+table Framed8RotationTrack {
+  frames:[uint8];
+  co:[sVec3];
+}
+
+union FloatTrack { FixedFloatTrack, DynamicFloatTrack, Framed16FloatTrack, Framed8FloatTrack }
+
+table FixedFloatTrack {
+  float:float;
+}
+
+table DynamicFloatTrack {
+  float:[float];
+}
+
+table Framed16FloatTrack {
+  frames:[uint16];
+  float:[float];
+}
+
+table Framed8FloatTrack {
+  frames:[uint8];
+  float:[float];
+}
+
+union ByteTrack { FixedByteTrack, DynamicByteTrack, Framed16ByteTrack, Framed8ByteTrack }
+
+table FixedByteTrack {
+  byte:uint8;
+}
+
+table DynamicByteTrack {
+  byte:[uint8];
+}
+
+table Framed16ByteTrack {
+  frames:[uint16];
+  byte:[uint8];
+}
+
+table Framed8ByteTrack {
+  frames:[uint8];
+  byte:[uint8];
+}
+
+union BooleanTrack { FixedBooleanTrack, DynamicBooleanTrack, Framed16BooleanTrack, Framed8BooleanTrack  }
+
+table FixedBooleanTrack {
+  bool:bool;
+}
+
+table DynamicBooleanTrack {
+  bool:[bool];
+}
+
+table Framed16BooleanTrack {
+  frames:[uint16];
+  bool:[bool];
+}
+
+table Framed8BooleanTrack {
+  frames:[uint8];
+  bool:[bool];
+}
+
+union DataTrack {IntDataTrack, FloatDataTrack, ByteDataTrack, StringDataTrack}
+
+table IntDataTrack {
+  value:uint32;
+}
+
+table FloatDataTrack {
+  value:float;
+}
+
+table ByteDataTrack {
+  value:uint8;
+}
+
+table StringDataTrack {
+  value:string;
+}
+
+table Info {
+  doesLoop:uint32;
+  keyFrames:uint32;
+  frameRate:uint32;
+}
+
+table BoneTrack {
+  name:string;
+  scale:VectorTrack;
+  rotate:RotationTrack;
+  translate:VectorTrack;
+}
+
+table BoneInit {
+  isInit:uint32;
+  transform:Transform; 
+}
+
+table BoneAnimation {
+  tracks:[BoneTrack];
+  initData:BoneInit;
+}
+
+table ColorEntry {
+  name:string;
+  col:VectorTrack;
+}
+
+table FlagEntry {
+  name:string;
+  flag:BooleanTrack;
+}
+
+table ShaderEntry {
+  name:string;
+  value:FloatTrack;
+}
+
+table MaterialTrack {
+  name:string;
+  flags:[FlagEntry];
+  values:[ShaderEntry];
+  vectors:[ColorEntry];
+}
+
+table MaterialAnimation {
+  tracks: [MaterialTrack];
+}
+
+table SkinTrack {
+  name:string;
+  values:ByteTrack;
+}
+
+table SkinAnimation {
+  tracks: [SkinTrack];
+}
+
+table CommandEntry {
+  name:string;
+  tracks:DataTrack;
+}
+
+table CommandTrack {
+  name:string;
+  frameStart:uint32;
+  frameLen:uint32;
+  vec:[CommandEntry];
+}
+
+table CommandAnimation {
+  tracks: [CommandTrack];
+}
+
+table Animation {
+  info:Info;
+  skeleton:BoneAnimation;
+  material:MaterialAnimation;
+  visibility:SkinAnimation;
+  eventData:CommandAnimation;
+}
+
+root_type Animation;
