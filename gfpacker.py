@@ -6,7 +6,7 @@ from dataclasses import dataclass
 import json
 import lz4.block
 
-from file_formats import gfbmdl, gfbanm, gfbanmcfg, bntx
+from file_formats import gfbmdl, gfbanm, gfbanmcfg, gfbpokecfg, bntx
 
 
 def fnv1a(s: str):
@@ -157,6 +157,9 @@ class GFPak:
                 if file_name.endswith(".gfbanmcfg"):
                     file_type = "animation_config"
                     file_name = file_name.replace(".gfbanmcfg", ".gfbanmcfg.json")
+                if file_name.endswith(".gfbpokecfg"):
+                    file_type = "poke_config"
+                    file_name = file_name.replace(".gfbpokecfg", ".gfbpokecfg.json")
                 if file_name.endswith(".bntx"):
                     file_type = "texture"
                     file_name = file_name.replace(".bntx", ".png")
@@ -182,6 +185,10 @@ class GFPak:
                     )
                 elif file_type == "animation_config":
                     gfbanmcfg.convert_gfbanmcfg_raw(
+                        decompressed_data, os.path.join(folder_name, file_name)
+                    )
+                elif file_type == "poke_config":
+                    gfbpokecfg.convert_gfbpokecfg_raw(
                         decompressed_data, os.path.join(folder_name, file_name)
                     )
                 elif file_type == "texture":
@@ -249,6 +256,15 @@ class GFPak:
                     ) as f:
                         self.decompressed_files.append(
                             gfbanmcfg.convert_to_gfbanmcfg_raw(f.read())
+                        )
+                elif file_type == "poke_config":
+                    with open(
+                        os.path.join(folder, folder_name, file_name),
+                        "r",
+                        encoding="utf-8",
+                    ) as f:
+                        self.decompressed_files.append(
+                            gfbpokecfg.convert_to_gfbpokecfg_raw(f.read())
                         )
                 elif file_type == "texture":
                     tex_file_name, _ = os.path.splitext(file_name)
