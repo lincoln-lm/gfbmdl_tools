@@ -6,8 +6,8 @@ materials = list(set(slot.material for mesh in meshes for slot in mesh.material_
 
 blend_dir = bpy.path.abspath("//")
 
-bpy.ops.object.select_all(action="DESELECT")
 bpy.ops.object.mode_set(mode="OBJECT")
+bpy.ops.object.select_all(action="DESELECT")
 
 scene = bpy.context.scene
 scene.render.engine = "CYCLES"
@@ -47,7 +47,6 @@ for mat in materials:
     plane.select_set(True)
     bpy.context.view_layer.objects.active = plane
 
-    print(f"Baking material: {mat.name}")
     bpy.ops.object.bake(type="DIFFUSE", pass_filter={"COLOR"})
 
     image.save()
