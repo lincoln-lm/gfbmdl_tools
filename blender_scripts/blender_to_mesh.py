@@ -281,7 +281,7 @@ def material_template(name, texture, shader, index):
 
 
 materials = [
-    material_template(material_name, material_name, "BodyATattu", i)
+    material_template(material_name, material_name, "shader", i)
     for i, material_name in enumerate(material_names)
 ]
 
