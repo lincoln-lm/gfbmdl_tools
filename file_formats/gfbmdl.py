@@ -140,40 +140,52 @@ MESH_DT = np.dtype(
 
 
 def dump_meshes(data, meshes):
-    assert len(meshes) == 1
-    meshes = meshes[0]
-    assert meshes["attributes"] == MESH_ATTRIBUTES
-    vertices = np.frombuffer(bytes(meshes["data"]), dtype=MESH_DT)
+    dumped_meshes = []
+    for mesh in meshes:
+        assert mesh["attributes"] == MESH_ATTRIBUTES
+        vertices = np.frombuffer(bytes(mesh["data"]), dtype=MESH_DT)
 
-    return {
-        "materials": [
+        dumped_meshes.append(
             {
-                "material": data["materialNames"][material["materialIndex"]],
-                "faces": material["faces"],
+                "materials": [
+                    {
+                        "material": data["materialNames"][material["materialIndex"]],
+                        "faces": material["faces"],
+                    }
+                    for material in mesh["polygons"]
+                ],
+                "vertices": [[d.tolist() for d in v] for v in vertices],
             }
-            for material in meshes["polygons"]
-        ],
-        "vertices": [[d.tolist() for d in v] for v in vertices],
-    }
+        )
+
+    return dumped_meshes
 
 
 def serialize_meshes(data, meshes):
-    vertices = [tuple(v) for v in meshes["vertices"]]
-    vertices = np.array(vertices, dtype=MESH_DT)
+    if isinstance(meshes, dict):
+        meshes = [meshes]
+    serialized_meshes = []
+    for mesh in meshes:
+        vertices = [tuple(v) for v in mesh["vertices"]]
+        vertices = np.array(vertices, dtype=MESH_DT)
 
-    return [
-        {
-            "polygons": [
-                {
-                    "materialIndex": data["materialNames"].index(material["material"]),
-                    "faces": material["faces"],
-                }
-                for material in meshes["materials"]
-            ],
-            "attributes": MESH_ATTRIBUTES,
-            "data": list(vertices.tobytes()),
-        }
-    ]
+        serialized_meshes.append(
+            {
+                "polygons": [
+                    {
+                        "materialIndex": data["materialNames"].index(
+                            material["material"]
+                        ),
+                        "faces": material["faces"],
+                    }
+                    for material in mesh["materials"]
+                ],
+                "attributes": MESH_ATTRIBUTES,
+                "data": list(vertices.tobytes()),
+            }
+        )
+
+    return serialized_meshes
 
 
 def dump_bones(bones):
@@ -181,60 +193,58 @@ def dump_bones(bones):
     for bone in bones:
         is_real = bone["boneType"] != "NoSkinning"
         assert bone["visible"] == is_real
-        new_bones.append(
-            {
-                "name": bone["name"],
-                "parent": bone["parent"],
-                "position": [
-                    bone["translation"]["x"],
-                    bone["translation"]["y"],
-                    bone["translation"]["z"],
-                ],
-                "rotation": [
-                    bone["rotation"]["x"],
-                    bone["rotation"]["y"],
-                    bone["rotation"]["z"],
-                ],
-                "scale": [bone["scale"]["x"], bone["scale"]["y"], bone["scale"]["z"]],
-                "isReal": is_real,
-            }
-        )
+        new_bone = {
+            "name": bone["name"],
+            "parent": bone["parent"],
+            "position": [
+                bone["translation"]["x"],
+                bone["translation"]["y"],
+                bone["translation"]["z"],
+            ],
+            "rotation": [
+                bone["rotation"]["x"],
+                bone["rotation"]["y"],
+                bone["rotation"]["z"],
+            ],
+            "scale": [bone["scale"]["x"], bone["scale"]["y"], bone["scale"]["z"]],
+            "isReal": is_real,
+            "rigidCheck": "rigidCheck" in bone,
+        }
+        new_bones.append(new_bone)
     return new_bones
 
 
 def serialize_bones(bones):
-    return [
-        {
-            k: v
-            for k, v in {
-                "name": bone["name"],
-                "parent": bone["parent"],
-                "zero": 0,
-                "visible": bone["isReal"],
-                "translation": {
-                    "x": bone["position"][0],
-                    "y": bone["position"][1],
-                    "z": bone["position"][2],
-                },
-                "rotation": {
-                    "x": bone["rotation"][0],
-                    "y": bone["rotation"][1],
-                    "z": bone["rotation"][2],
-                },
-                "scale": {
-                    "x": bone["scale"][0],
-                    "y": bone["scale"][1],
-                    "z": bone["scale"][2],
-                },
-                "boneType": "NoSkinning" if not bone["isReal"] else "HasSkinning",
-                "radiusStart": {"x": 0.0, "y": 0.0, "z": 0.0},
-                "radiusEnd": {"x": 0.0, "y": 0.0, "z": 0.0},
-                "rigidCheck": {"unknown1": 0},
-            }.items()
-            if not (k == "rigidCheck" and bone["isReal"]) or bone["parent"] == 1
+    serialized_bones = []
+    for bone in bones:
+        serialized_bone = {
+            "name": bone["name"],
+            "parent": bone["parent"],
+            "zero": 0,
+            "visible": bone["isReal"],
+            "translation": {
+                "x": bone["position"][0],
+                "y": bone["position"][1],
+                "z": bone["position"][2],
+            },
+            "rotation": {
+                "x": bone["rotation"][0],
+                "y": bone["rotation"][1],
+                "z": bone["rotation"][2],
+            },
+            "scale": {
+                "x": bone["scale"][0],
+                "y": bone["scale"][1],
+                "z": bone["scale"][2],
+            },
+            "boneType": "NoSkinning" if not bone["isReal"] else "HasSkinning",
+            "radiusStart": {"x": 0.0, "y": 0.0, "z": 0.0},
+            "radiusEnd": {"x": 0.0, "y": 0.0, "z": 0.0},
         }
-        for bone in bones
-    ]
+        if "rigidCheck" in bone and bone["rigidCheck"]:
+            serialized_bone["rigidCheck"] = {"unknown1": 0}
+        serialized_bones.append(serialized_bone)
+    return serialized_bones
 
 
 def dump_gfbmdl_raw(data: bytes, path: str):

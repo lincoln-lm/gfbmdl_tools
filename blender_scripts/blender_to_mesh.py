@@ -80,7 +80,7 @@ for mesh in meshes:
             bone_name = group_lookup[g.group]
             bone_id = bone_id_lookup[bone_name]
             assert bone_id >= 1
-            bones.append(bone_id - 1)
+            bones.append(bone_id)
             weights.append(int(g.weight * 255 // 1))
         bones = bones + [0, 0, 0, 0][len(bones) :]
         weights = weights + [0, 0, 0, 0][len(weights) :]
