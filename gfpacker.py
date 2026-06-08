@@ -19,10 +19,12 @@ def fnv1a(s: str):
     return h
 
 
-with open(
-    os.path.join(os.path.dirname(__file__), "hashes.json"), "r", encoding="utf-8"
-) as f:
-    HASHES = json.load(f)
+hashes_path = os.path.join(os.path.dirname(__file__), "hashes.json")
+if os.path.exists(hashes_path):
+    with open(hashes_path, "r", encoding="utf-8") as f:
+        HASHES = json.load(f)
+else:
+    HASHES = {}
 
 
 class GFPak:
