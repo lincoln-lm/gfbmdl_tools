@@ -37,6 +37,7 @@ table Condition {
   name:string;
   func:ConditionFunc;
   value:ValueType;
+  unk:uint32;
 }
 
 table Transition {
@@ -49,7 +50,7 @@ table Transition {
   conditions:[Condition];
   undef_7:uint32;
   undef_8:uint32;
-  undef_9:uint32;
+  undef_9:uint8;
   undef_10:uint32;
   unk_11:string;
 }
@@ -82,7 +83,7 @@ table State {
   source:Source;
   transitions:[Transition];
   substates:[State];
-  // unk_1:StateNodeUnk;
+  unk_1:StateNodeUnk;
 }
 
 table TopState {
