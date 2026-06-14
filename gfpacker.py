@@ -6,7 +6,7 @@ from dataclasses import dataclass
 import json
 import lz4.block
 
-from file_formats import gfbmdl, gfbanm, gfbanmcfg, gfbpokecfg, bntx
+from file_formats import gfbmdl, gfbanm, gfbanmcfg, gfbpokecfg, bntx, bnsh
 
 
 def fnv1a(s: str):
@@ -165,6 +165,12 @@ class GFPak:
                 if file_name.endswith(".bntx"):
                     file_type = "texture"
                     file_name = file_name.replace(".bntx", ".png")
+                if file_name.endswith(".bnsh_fsh"):
+                    file_type = "fragment_shader"
+                    file_name = file_name.replace(".bnsh_fsh", ".frag")
+                if file_name.endswith(".bnsh_vsh"):
+                    file_type = "vertex_shader"
+                    file_name = file_name.replace(".bnsh_vsh", ".vert")
                 folder_meta["files"].append(
                     {
                         "name": file_name,
@@ -199,6 +205,14 @@ class GFPak:
                     )
                     folder_meta["files"][-1]["bntx_format"] = (
                         bntx.check_bntx_format_raw(decompressed_data)
+                    )
+                elif file_type == "fragment_shader":
+                    bnsh.decompile_fragment_shader_raw(
+                        decompressed_data, os.path.join(folder_name, file_name)
+                    )
+                elif file_type == "vertex_shader":
+                    bnsh.decompile_vertex_shader_raw(
+                        decompressed_data, os.path.join(folder_name, file_name)
                     )
 
             metadata["folders"].append(folder_meta)
@@ -276,6 +290,12 @@ class GFPak:
                             os.path.join(folder, folder_name, file_name),
                             tex_file_name,
                             file_meta["bntx_format"],
+                        )
+                    )
+                elif file_type in ("vertex_shader", "fragment_shader"):
+                    self.decompressed_files.append(
+                        bnsh.compile_shader_raw(
+                            os.path.join(folder, folder_name, file_name)
                         )
                     )
 
