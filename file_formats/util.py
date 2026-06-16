@@ -57,6 +57,7 @@ def flatbuffer_binary_to_json(data: bytes, schema: str) -> str:
                 "--",
                 f.name,
                 "--raw-binary",
+                "--no-warnings",
             ],
             check=True,
         )
@@ -74,6 +75,7 @@ def json_to_flatbuffer_binary(data: str, schema: str) -> bytes:
         subprocess.run(
             [
                 "flatc",
+                "--no-warnings",
                 "--binary",
                 "schema.fbs",
                 f.name,
