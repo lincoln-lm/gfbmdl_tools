@@ -123,11 +123,9 @@ def material_template(name, texture, shader, index):
         "unknown6": 0,
         "unknown7": 0,
         "parameter1": 0,
-        "parameter2": 0,
-        "parameter3": 1,
+        "blendMode": 0,
+        "cullMode": 1,
         "shader": shader,
-        "parameter4": -1,
-        "parameter5": index,
         "textureMaps": [
             {
                 "sampler": "Col0Tex",

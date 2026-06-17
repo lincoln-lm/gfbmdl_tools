@@ -113,11 +113,11 @@ table Material {
   unknown1: ubyte;
   unknown2: ubyte;
   parameter1: int;
-  parameter2: int;
-  parameter3: int;
+  blendMode: int;
+  cullMode: int;
   shaderIndex: int;
-  parameter4: int;
-  parameter5: int;
+  shaderIndex2: int;
+  shaderIndex3: int;
   textureMaps: [TextureMap];
   switches: [MatSwitch];
   values: [MatFloat];
@@ -180,8 +180,8 @@ table Model {
   bounding: BoundingBox;
   textureNames: [string];
   shaderNames: [string];
-  unknown: [UnknownEmpty];
-  materialNames: [string];
+  shaderNames2: [string];
+  shaderNames3: [string];
   materials: [Material];
   groups: [Group];
   meshes: [Mesh];

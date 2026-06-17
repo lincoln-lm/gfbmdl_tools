@@ -22,10 +22,9 @@ def dump_materials(data, materials):
             "unknown6": material["unknown6"],
             "unknown7": material["unknown7"],
             "parameter1": material["parameter1"],
-            "parameter2": material["parameter2"],
-            "parameter3": material["parameter3"],
+            "blendMode": material["blendMode"],
+            "cullMode": material["cullMode"],
             "shader": data["shaderNames"][material["shaderIndex"]],
-            "parameter4": material["parameter4"],
             "textureMaps": [
                 {
                     "sampler": map["sampler"],
@@ -75,11 +74,11 @@ def serialize_materials(data, materials):
             "unknown6": material["unknown6"],
             "unknown7": material["unknown7"],
             "parameter1": material["parameter1"],
-            "parameter2": material["parameter2"],
-            "parameter3": material["parameter3"],
+            "blendMode": material["blendMode"],
+            "cullMode": material["cullMode"],
             "shaderIndex": data["shaderNames"].index(material["shader"]),
-            "parameter4": material["parameter4"],
-            "parameter5": data["shaderNames"].index(material["shader"]),
+            "shaderIndex2": data["shaderNames"].index(material["shader"]),
+            "shaderIndex3": data["shaderNames"].index(material["shader"]),
             "textureMaps": [
                 {
                     "sampler": map["sampler"],
@@ -149,7 +148,9 @@ def dump_meshes(data, meshes):
             {
                 "materials": [
                     {
-                        "material": data["materialNames"][material["materialIndex"]],
+                        "material": data["materials"][material["materialIndex"]][
+                            "name"
+                        ],
                         "faces": material["faces"],
                     }
                     for material in mesh["polygons"]
@@ -168,14 +169,13 @@ def serialize_meshes(data, meshes):
     for mesh in meshes:
         vertices = [tuple(v) for v in mesh["vertices"]]
         vertices = np.array(vertices, dtype=MESH_DT)
+        material_names = [material["name"] for material in data["materials"]]
 
         serialized_meshes.append(
             {
                 "polygons": [
                     {
-                        "materialIndex": data["materialNames"].index(
-                            material["material"]
-                        ),
+                        "materialIndex": material_names.index(material["material"]),
                         "faces": material["faces"],
                     }
                     for material in mesh["materials"]
@@ -278,8 +278,8 @@ def serialize_gfbmdl_str_raw(data: str) -> bytes:
     model["materials"] = serialize_materials(model, model["materials"])
     model["meshes"] = serialize_meshes(model, model["meshes"])
     model["bones"] = serialize_bones(model["bones"])
-    model["unknown"] = []
-    model["materialNames"] = model["shaderNames"]
+    model["shaderNames2"] = []
+    model["shaderNames3"] = model["shaderNames"]
     return json_to_flatbuffer_binary(json.dumps(model), SCHEMA)
 
 
@@ -288,7 +288,6 @@ def serialize_gfbmdl_path_raw(in_path: str) -> bytes:
         data = json.load(f)
     with open(os.path.join(in_path, "materials.json"), "r", encoding="utf-8") as f:
         data["materials"] = json.load(f)
-        data["materialNames"] = [mat["name"] for mat in data["materials"]]
     with open(os.path.join(in_path, "meshes.json"), "r", encoding="utf-8") as f:
         data["meshes"] = json.load(f)
     with open(os.path.join(in_path, "bones.json"), "r", encoding="utf-8") as f:
