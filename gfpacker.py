@@ -295,7 +295,8 @@ class GFPak:
                 elif file_type in ("vertex_shader", "fragment_shader"):
                     self.decompressed_files.append(
                         bnsh.compile_shader_raw(
-                            os.path.join(folder, folder_name, file_name)
+                            os.path.join(folder, folder_name, file_name),
+                            file_meta.get("constants", None),
                         )
                     )
 

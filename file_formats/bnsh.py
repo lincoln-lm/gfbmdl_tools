@@ -1,22 +1,36 @@
 import subprocess
+import tempfile
+import pathlib
 from .util import raw_to_temp_file, IsolatedTempFile
 
 
-def compile_shader(in_path, out_path):
-    subprocess.run(
-        [
-            "ShaderLibrary.CompileTool",
-            "uam-nvn",
-            in_path,
-            out_path,
-        ],
-        check=True,
-    )
+def compile_shader(in_path, out_path, constants=None):
+    if constants is None:
+        constants = {}
+    with tempfile.NamedTemporaryFile(
+        suffix=pathlib.Path(in_path).suffix, mode="w+"
+    ) as f:
+        shader_text = pathlib.Path(in_path).read_text("utf-8")
+        for line in shader_text.split("\n"):
+            for k, v in constants.items():
+                if f"{k} = " in line:
+                    line = line.split(f"{k} = ")[0] + f"{k} = {v};"
+            f.write(line + "\n")
+        f.flush()
+        subprocess.run(
+            [
+                "ShaderLibrary.CompileTool",
+                "uam-nvn",
+                f.name,
+                out_path,
+            ],
+            check=True,
+        )
 
 
-def compile_shader_raw(in_path) -> bytes:
+def compile_shader_raw(in_path, constants=None) -> bytes:
     with IsolatedTempFile() as (d, f):
-        compile_shader(in_path, f.name)
+        compile_shader(in_path, f.name, constants)
         return f.read()
 
 
