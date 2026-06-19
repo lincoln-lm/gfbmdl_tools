@@ -77,7 +77,7 @@ def serialize_materials(data, materials):
             "blendMode": material["blendMode"],
             "cullMode": material["cullMode"],
             "shaderIndex": data["shaderNames"].index(material["shader"]),
-            "shaderIndex2": data["shaderNames"].index(material["shader"]),
+            "shaderIndex2": -1,
             "shaderIndex3": data["shaderNames"].index(material["shader"]),
             "textureMaps": [
                 {
