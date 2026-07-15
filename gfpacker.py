@@ -4,6 +4,7 @@ import os
 import struct
 from dataclasses import dataclass
 import json
+import subprocess
 import lz4.block
 
 from file_formats import gfbmdl, gfbanm, gfbanmcfg, gfbpokecfg, bntx, bnsh
@@ -200,20 +201,35 @@ class GFPak:
                         decompressed_data, os.path.join(folder_name, file_name)
                     )
                 elif file_type == "texture":
-                    bntx.convert_bntx_raw(
-                        decompressed_data, os.path.join(folder_name, file_name)
-                    )
-                    folder_meta["files"][-1]["bntx_format"] = (
-                        bntx.check_bntx_format_raw(decompressed_data)
-                    )
+                    try:
+                        bntx.convert_bntx_raw(
+                            decompressed_data, os.path.join(folder_name, file_name)
+                        )
+                        folder_meta["files"][-1]["bntx_format"] = (
+                            bntx.check_bntx_format_raw(decompressed_data)
+                        )
+                    except subprocess.CalledProcessError:
+                        folder_meta["files"][-1]["file_type"] = "raw"
+                        with open(os.path.join(folder_name, file_name), "wb") as f:
+                            f.write(decompressed_data)
                 elif file_type == "fragment_shader":
-                    bnsh.decompile_fragment_shader_raw(
-                        decompressed_data, os.path.join(folder_name, file_name)
-                    )
+                    try:
+                        bnsh.decompile_fragment_shader_raw(
+                            decompressed_data, os.path.join(folder_name, file_name)
+                        )
+                    except subprocess.CalledProcessError:
+                        folder_meta["files"][-1]["file_type"] = "raw"
+                        with open(os.path.join(folder_name, file_name), "wb") as f:
+                            f.write(decompressed_data)
                 elif file_type == "vertex_shader":
-                    bnsh.decompile_vertex_shader_raw(
-                        decompressed_data, os.path.join(folder_name, file_name)
-                    )
+                    try:
+                        bnsh.decompile_vertex_shader_raw(
+                            decompressed_data, os.path.join(folder_name, file_name)
+                        )
+                    except subprocess.CalledProcessError:
+                        folder_meta["files"][-1]["file_type"] = "raw"
+                        with open(os.path.join(folder_name, file_name), "wb") as f:
+                            f.write(decompressed_data)
 
             metadata["folders"].append(folder_meta)
 
