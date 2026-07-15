@@ -19,7 +19,8 @@ enum VertexType : uint {
   Color3 = 9,
   Color4 = 10,
   BoneID = 11,
-  BoneWeight = 12
+  BoneWeight = 12,
+  Unk = 13
 }
 
 enum BoneType : uint {

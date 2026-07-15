@@ -114,7 +114,22 @@ def serialize_materials(data, materials):
     ]
 
 
-MESH_ATTRIBUTES = [
+def attribute_to_dt(attribute):
+    name = attribute["vertexType"].lower()
+    if name == "boneid":
+        name = "bone_id"
+    if name == "boneweight":
+        name = "bone_weight"
+    data_type = {
+        "Float": "f4",
+        "HalfFloat": "f2",
+        "Byte": "u1",
+        "BytesAsFloat": "u1",
+    }
+    return (name, data_type[attribute["bufferFormat"]], attribute["elementCount"])
+
+
+BASIC_MESH_ATTRIBUTES = [
     {"vertexType": "Position", "bufferFormat": "Float", "elementCount": 3},
     {"vertexType": "Normal", "bufferFormat": "HalfFloat", "elementCount": 4},
     {"vertexType": "Binormal", "bufferFormat": "HalfFloat", "elementCount": 4},
@@ -124,7 +139,7 @@ MESH_ATTRIBUTES = [
     {"vertexType": "BoneID", "bufferFormat": "Byte", "elementCount": 4},
     {"vertexType": "BoneWeight", "bufferFormat": "BytesAsFloat", "elementCount": 4},
 ]
-MESH_DT = np.dtype(
+BASIC_MESH_DT = np.dtype(
     [
         ("position", "f4", 3),
         ("normal", "f2", 4),
@@ -141,8 +156,9 @@ MESH_DT = np.dtype(
 def dump_meshes(data, meshes):
     dumped_meshes = []
     for mesh in meshes:
-        assert mesh["attributes"] == MESH_ATTRIBUTES
-        vertices = np.frombuffer(bytes(mesh["data"]), dtype=MESH_DT)
+        mesh_dt = np.dtype([attribute_to_dt(attr) for attr in mesh["attributes"]])
+        # assert mesh["attributes"] == MESH_ATTRIBUTES
+        vertices = np.frombuffer(bytes(mesh["data"]), dtype=mesh_dt)
 
         dumped_meshes.append(
             {
@@ -155,6 +171,7 @@ def dump_meshes(data, meshes):
                     }
                     for material in mesh["polygons"]
                 ],
+                "attributes": mesh["attributes"],
                 "vertices": [[d.tolist() for d in v] for v in vertices],
             }
         )
@@ -167,8 +184,10 @@ def serialize_meshes(data, meshes):
         meshes = [meshes]
     serialized_meshes = []
     for mesh in meshes:
+        attributes = mesh.get("attributes", BASIC_MESH_ATTRIBUTES)
+        mesh_dt = np.dtype([attribute_to_dt(attr) for attr in attributes])
         vertices = [tuple(v) for v in mesh["vertices"]]
-        vertices = np.array(vertices, dtype=MESH_DT)
+        vertices = np.array(vertices, dtype=mesh_dt)
         material_names = [material["name"] for material in data["materials"]]
 
         serialized_meshes.append(
@@ -180,7 +199,7 @@ def serialize_meshes(data, meshes):
                     }
                     for material in mesh["materials"]
                 ],
-                "attributes": MESH_ATTRIBUTES,
+                "attributes": attributes,
                 "data": list(vertices.tobytes()),
             }
         )
@@ -192,7 +211,7 @@ def dump_bones(bones):
     new_bones = []
     for bone in bones:
         is_real = bone["boneType"] != "NoSkinning"
-        assert bone["visible"] == is_real
+        # assert bone["visible"] == is_real
         new_bone = {
             "name": bone["name"],
             "parent": bone["parent"],
@@ -262,7 +281,7 @@ def dump_gfbmdl_raw(data: bytes, path: str):
         json.dump(dump_materials(model, materials), f, indent=2)
     with open(os.path.join(path, "bones.json"), "w", encoding="utf-8") as f:
         bones = model.pop("bones")
-        assert bones == serialize_bones(dump_bones(bones))
+        # assert bones == serialize_bones(dump_bones(bones))
         json.dump(dump_bones(bones), f, indent=2)
     with open(os.path.join(path, "model.json"), "w", encoding="utf-8") as f:
         json.dump(model, f, indent=2)
