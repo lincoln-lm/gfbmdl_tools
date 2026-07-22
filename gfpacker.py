@@ -273,9 +273,10 @@ class GFPak:
                     with open(os.path.join(folder, folder_name, file_name), "rb") as f:
                         self.decompressed_files.append(f.read())
                 elif file_type == "model":
+                    texture_prefix = file_meta.get("texture_prefix", "")
                     self.decompressed_files.append(
                         gfbmdl.serialize_gfbmdl_path_raw(
-                            os.path.join(folder, folder_name, file_name)
+                            os.path.join(folder, folder_name, file_name), texture_prefix
                         )
                     )
                 elif file_type == "model_instances":

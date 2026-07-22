@@ -302,11 +302,17 @@ def serialize_gfbmdl_str_raw(data: str) -> bytes:
     return json_to_flatbuffer_binary(json.dumps(model), SCHEMA)
 
 
-def serialize_gfbmdl_path_raw(in_path: str) -> bytes:
+def serialize_gfbmdl_path_raw(in_path: str, texture_prefix: str = "") -> bytes:
     with open(os.path.join(in_path, "model.json"), "r", encoding="utf-8") as f:
         data = json.load(f)
+        data["textureNames"] = [
+            texture_prefix + texture for texture in data["textureNames"]
+        ]
     with open(os.path.join(in_path, "materials.json"), "r", encoding="utf-8") as f:
         data["materials"] = json.load(f)
+        for material in data["materials"]:
+            for texture_map in material["textureMaps"]:
+                texture_map["texture"] = texture_prefix + texture_map["texture"]
     with open(os.path.join(in_path, "meshes.json"), "r", encoding="utf-8") as f:
         data["meshes"] = json.load(f)
     with open(os.path.join(in_path, "bones.json"), "r", encoding="utf-8") as f:
