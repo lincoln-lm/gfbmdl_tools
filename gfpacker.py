@@ -7,7 +7,7 @@ import json
 import subprocess
 import lz4.block
 
-from file_formats import gfbmdl, gfbanm, gfbanmcfg, gfbpokecfg, bntx, bnsh
+from file_formats import gfbmdl, gfbmdli, gfbanm, gfbanmcfg, gfbpokecfg, bntx, bnsh
 
 
 def fnv1a(s: str):
@@ -154,6 +154,9 @@ class GFPak:
                 if file_name.endswith(".gfbmdl"):
                     file_type = "model"
                     file_name = file_name.replace(".gfbmdl", "")
+                if file_name.endswith(".gfbmdli"):
+                    file_type = "model_instances"
+                    file_name = file_name.replace(".gfbmdli", ".gfbmdli.json")
                 if file_name.endswith(".gfbanm"):
                     file_type = "animation"
                     file_name = file_name.replace(".gfbanm", ".gfbanm.json")
@@ -186,6 +189,10 @@ class GFPak:
                         f.write(decompressed_data)
                 elif file_type == "model":
                     gfbmdl.dump_gfbmdl_raw(
+                        decompressed_data, os.path.join(folder_name, file_name)
+                    )
+                elif file_type == "model_instances":
+                    gfbmdli.convert_gfbmdli_raw(
                         decompressed_data, os.path.join(folder_name, file_name)
                     )
                 elif file_type == "animation":
@@ -271,6 +278,15 @@ class GFPak:
                             os.path.join(folder, folder_name, file_name)
                         )
                     )
+                elif file_type == "model_instances":
+                    with open(
+                        os.path.join(folder, folder_name, file_name),
+                        "r",
+                        encoding="utf-8",
+                    ) as f:
+                        self.decompressed_files.append(
+                            gfbmdli.convert_to_gfbmdli_raw(f.read())
+                        )
                 elif file_type == "animation":
                     with open(
                         os.path.join(folder, folder_name, file_name),
