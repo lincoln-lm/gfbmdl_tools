@@ -276,6 +276,7 @@ def serialize_bones(bones):
 
 def dump_gfbmdl_raw(data: bytes, path: str):
     model = json.loads(flatbuffer_binary_to_json(data, SCHEMA))
+    base_model = model.copy()
     if not os.path.exists(path):
         os.mkdir(path)
 
@@ -293,6 +294,7 @@ def dump_gfbmdl_raw(data: bytes, path: str):
         json.dump(dump_bones(bones), f, indent=2)
     with open(os.path.join(path, "model.json"), "w", encoding="utf-8") as f:
         json.dump(model, f, indent=2)
+    assert base_model == serialize_gfbmdl_path_json(path)
 
 
 def dump_gfbmdl(in_path: str, out_path: str):
@@ -300,17 +302,7 @@ def dump_gfbmdl(in_path: str, out_path: str):
         dump_gfbmdl_raw(f.read(), out_path)
 
 
-def serialize_gfbmdl_str_raw(data: str) -> bytes:
-    model = json.loads(data)
-    model["materials"] = serialize_materials(model, model["materials"])
-    model["meshes"] = serialize_meshes(model, model["meshes"])
-    model["bones"] = serialize_bones(model["bones"])
-    model["shaderNames2"] = []
-    model["shaderNames3"] = model["shaderNames"]
-    return json_to_flatbuffer_binary(json.dumps(model), SCHEMA)
-
-
-def serialize_gfbmdl_path_raw(in_path: str, texture_prefix: str = "") -> bytes:
+def serialize_gfbmdl_path_json(in_path: str, texture_prefix: str = "") -> dict:
     with open(os.path.join(in_path, "model.json"), "r", encoding="utf-8") as f:
         data = json.load(f)
         data["textureNames"] = [
@@ -325,7 +317,18 @@ def serialize_gfbmdl_path_raw(in_path: str, texture_prefix: str = "") -> bytes:
         data["meshes"] = json.load(f)
     with open(os.path.join(in_path, "bones.json"), "r", encoding="utf-8") as f:
         data["bones"] = json.load(f)
-    return serialize_gfbmdl_str_raw(json.dumps(data))
+
+    data["materials"] = serialize_materials(data, data["materials"])
+    data["meshes"] = serialize_meshes(data, data["meshes"])
+    data["bones"] = serialize_bones(data["bones"])
+    data["shaderNames2"] = []
+    data["shaderNames3"] = data["shaderNames"]
+    return data
+
+
+def serialize_gfbmdl_path_raw(in_path: str, texture_prefix: str = "") -> bytes:
+    data = serialize_gfbmdl_path_json(in_path, texture_prefix)
+    return json_to_flatbuffer_binary(json.dumps(data), SCHEMA)
 
 
 def serialize_gfbmdl(in_path: str, out_path: str):
