@@ -165,7 +165,6 @@ def dump_meshes(data, meshes):
     dumped_meshes = []
     for mesh in meshes:
         mesh_dt = np.dtype([attribute_to_dt(attr) for attr in mesh["attributes"]])
-        # assert mesh["attributes"] == MESH_ATTRIBUTES
         vertices = np.frombuffer(bytes(mesh["data"]), dtype=mesh_dt)
 
         dumped_meshes.append(
@@ -219,7 +218,6 @@ def dump_bones(bones):
     new_bones = []
     for bone in bones:
         is_real = bone["boneType"] != "NoSkinning"
-        # assert bone["visible"] == is_real
         new_bone = {
             "name": bone["name"],
             "parent": bone["parent"],
@@ -287,14 +285,6 @@ def dump_gfbmdl_raw(data: bytes, path: str):
         json.dump(dump_meshes(model, meshes), f, indent=2)
     with open(os.path.join(path, "materials.json"), "w", encoding="utf-8") as f:
         materials = model.pop("materials")
-        with open(os.path.join(path, "test_0.json"), "w", encoding="utf-8") as f2:
-            json.dump(materials, f2, indent=2)
-        with open(os.path.join(path, "test_1.json"), "w", encoding="utf-8") as f2:
-            json.dump(
-                serialize_materials(model, dump_materials(model, materials)),
-                f2,
-                indent=2,
-            )
         assert materials == serialize_materials(model, dump_materials(model, materials))
         json.dump(dump_materials(model, materials), f, indent=2)
     with open(os.path.join(path, "bones.json"), "w", encoding="utf-8") as f:
