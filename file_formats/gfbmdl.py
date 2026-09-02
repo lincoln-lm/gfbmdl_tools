@@ -54,6 +54,10 @@ def dump_materials(data, materials):
                     switch["name"]: switch["value"]
                     for switch in material["common"]["switches"]
                 },
+                "colors": {
+                    color["name"]: color["value"]
+                    for color in material["common"].get("colors", [])
+                },
             },
         }
         for material in materials
@@ -107,6 +111,10 @@ def serialize_materials(data, materials):
                 "switches": [
                     {"name": name, "value": value}
                     for name, value in material["common"]["switches"].items()
+                ],
+                "colors": [
+                    {"name": name, "value": value}
+                    for name, value in material["common"].get("colors", {}).items()
                 ],
             },
         }
@@ -277,6 +285,14 @@ def dump_gfbmdl_raw(data: bytes, path: str):
         json.dump(dump_meshes(model, meshes), f, indent=2)
     with open(os.path.join(path, "materials.json"), "w", encoding="utf-8") as f:
         materials = model.pop("materials")
+        with open(os.path.join(path, "test_0.json"), "w", encoding="utf-8") as f2:
+            json.dump(materials, f2, indent=2)
+        with open(os.path.join(path, "test_1.json"), "w", encoding="utf-8") as f2:
+            json.dump(
+                serialize_materials(model, dump_materials(model, materials)),
+                f2,
+                indent=2,
+            )
         assert materials == serialize_materials(model, dump_materials(model, materials))
         json.dump(dump_materials(model, materials), f, indent=2)
     with open(os.path.join(path, "bones.json"), "w", encoding="utf-8") as f:
