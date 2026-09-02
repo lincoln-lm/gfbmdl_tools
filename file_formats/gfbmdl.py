@@ -237,6 +237,8 @@ def dump_bones(bones):
             "isReal": is_real,
             "rigidCheck": "rigidCheck" in bone,
         }
+        if bone["visible"] != is_real:
+            new_bone["visibleOverride"] = bone["visible"]
         new_bones.append(new_bone)
     return new_bones
 
@@ -248,7 +250,7 @@ def serialize_bones(bones):
             "name": bone["name"],
             "parent": bone["parent"],
             "zero": 0,
-            "visible": bone["isReal"],
+            "visible": bone.get("visibleOverride", bone["isReal"]),
             "translation": {
                 "x": bone["position"][0],
                 "y": bone["position"][1],
@@ -297,7 +299,7 @@ def dump_gfbmdl_raw(data: bytes, path: str):
         json.dump(dump_materials(model, materials), f, indent=2)
     with open(os.path.join(path, "bones.json"), "w", encoding="utf-8") as f:
         bones = model.pop("bones")
-        # assert bones == serialize_bones(dump_bones(bones))
+        assert bones == serialize_bones(dump_bones(bones))
         json.dump(dump_bones(bones), f, indent=2)
     with open(os.path.join(path, "model.json"), "w", encoding="utf-8") as f:
         json.dump(model, f, indent=2)
