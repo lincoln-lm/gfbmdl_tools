@@ -26,6 +26,14 @@ if os.path.exists(hashes_path):
         HASHES = json.load(f)
 else:
     HASHES = {}
+extra_hashes_path = os.path.join(os.path.dirname(__file__), "extra_hashes.txt")
+if os.path.exists(extra_hashes_path):
+    with open(extra_hashes_path, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            HASHES[str(fnv1a(line))] = line
 
 
 class GFPak:
@@ -122,7 +130,11 @@ class GFPak:
         with open(gfpak_name, "wb+") as f:
             f.write(buffer.getbuffer())
 
-    def dump_files(self, output_folder: str) -> None:
+    def dump_files(
+        self, output_folder: str, unconverted_types: list | None = None
+    ) -> None:
+        if unconverted_types is None:
+            unconverted_types = []
         if not os.path.exists(output_folder):
             os.mkdir(output_folder)
         metadata = {"folders": []}
@@ -176,6 +188,9 @@ class GFPak:
                 if file_name.endswith(".bnsh_vsh"):
                     file_type = "vertex_shader"
                     file_name = file_name.replace(".bnsh_vsh", ".vert")
+                if file_type in unconverted_types:
+                    file_type = "raw"
+                    file_name = base_name
                 folder_meta["files"].append(
                     {
                         "name": file_name,
@@ -397,6 +412,7 @@ if __name__ == "__main__":
         "--unpack",
         action="store_true",
     )
+    parser.add_argument("--unconverted-types", nargs="+", type=str)
     parser.add_argument(
         "input",
     )
@@ -409,7 +425,7 @@ if __name__ == "__main__":
     if args.unpack:
         with open(args.input, "rb") as f:
             gfpak.parse_buffer(bytearray(f.read()))
-        gfpak.dump_files(args.output)
+        gfpak.dump_files(args.output, args.unconverted_types)
     else:
         gfpak.from_files(args.input)
         gfpak.serialize_gfpak(args.output)

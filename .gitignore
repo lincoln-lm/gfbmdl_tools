@@ -1,3 +1,4 @@
 *.gfpak
 hashes.json
+extra_hashes.txt
 __pycache__/
