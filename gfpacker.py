@@ -151,6 +151,7 @@ class GFPak:
                 if str(absolute_hash) in HASHES:
                     absolute_hash = HASHES[str(absolute_hash)]
                 file_type = "raw"
+                base_name = file_name
                 if file_name.endswith(".gfbmdl"):
                     file_type = "model"
                     file_name = file_name.replace(".gfbmdl", "")
@@ -216,8 +217,9 @@ class GFPak:
                             bntx.check_bntx_format_raw(decompressed_data)
                         )
                     except subprocess.CalledProcessError:
-                        folder_meta["files"][-1]["file_type"] = "raw"
-                        with open(os.path.join(folder_name, file_name), "wb") as f:
+                        folder_meta["files"][-1]["type"] = "raw"
+                        folder_meta["files"][-1]["name"] = base_name
+                        with open(os.path.join(folder_name, base_name), "wb") as f:
                             f.write(decompressed_data)
                 elif file_type == "fragment_shader":
                     try:
@@ -225,8 +227,9 @@ class GFPak:
                             decompressed_data, os.path.join(folder_name, file_name)
                         )
                     except subprocess.CalledProcessError:
-                        folder_meta["files"][-1]["file_type"] = "raw"
-                        with open(os.path.join(folder_name, file_name), "wb") as f:
+                        folder_meta["files"][-1]["type"] = "raw"
+                        folder_meta["files"][-1]["name"] = base_name
+                        with open(os.path.join(folder_name, base_name), "wb") as f:
                             f.write(decompressed_data)
                 elif file_type == "vertex_shader":
                     try:
@@ -234,8 +237,9 @@ class GFPak:
                             decompressed_data, os.path.join(folder_name, file_name)
                         )
                     except subprocess.CalledProcessError:
-                        folder_meta["files"][-1]["file_type"] = "raw"
-                        with open(os.path.join(folder_name, file_name), "wb") as f:
+                        folder_meta["files"][-1]["type"] = "raw"
+                        folder_meta["files"][-1]["name"] = base_name
+                        with open(os.path.join(folder_name, base_name), "wb") as f:
                             f.write(decompressed_data)
 
             metadata["folders"].append(folder_meta)
